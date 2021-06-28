@@ -2,6 +2,10 @@
 #![no_main]
 
 #![feature(asm)]
+#![feature(abi_efiapi)]
+
+
+
 use core::panic::PanicInfo;
 
 #[panic_handler]
@@ -11,7 +15,6 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub fn efi_main() {
-    let i: i8 = 5;
-    unsafe {asm!("mov rax, 0x55");}
+    unsafe {asm!("mov rax, 0x65");}
     loop {}
 }

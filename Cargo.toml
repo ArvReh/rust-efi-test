@@ -9,4 +9,7 @@ authors = ["dfs"]
 edition = "2018"
 
 [dependencies]
+uefi = "0.11.0"
 
+[target.'cfg(target_arch="x86_64")'.dependencies]
+arch = {path = "src/arch/x86_64"}
