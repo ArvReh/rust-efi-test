@@ -1,0 +1,12 @@
+[package]
+name = "os"
+description = "A badly written toy Operating System with too many bugs"
+readme = "README.md"
+repository = "https://github.com/"
+license = "MIT"
+version = "0.0.0"
+authors = ["dfs"]
+edition = "2018"
+
+[dependencies]
+
