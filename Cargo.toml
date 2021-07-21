@@ -1,6 +1,6 @@
 [package]
 name = "os"
-description = "A badly written toy Operating System with too many bugs"
+description = "A badly written Operating System with too many bugs"
 readme = "README.md"
 repository = "https://github.com/"
 license = "MIT"
@@ -11,5 +11,5 @@ edition = "2018"
 [dependencies]
 r-efi = "4.0.0"
 
-[target.'cfg(target_arch="x86_64")'.dependencies]
-arch = {path = "src/arch/x86_64"}
+[lib]
+name = "kernel"

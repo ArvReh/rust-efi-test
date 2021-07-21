@@ -4,27 +4,13 @@
 #![feature(asm)]
 #![feature(abi_efiapi)]
 
-use arch::mem;
+use kernel::arch::arch::mem;
+mod panic;
 
-use core::panic::PanicInfo;
 use core::ptr;
 use core::ffi::c_void;
 
 use r_efi::efi;
-
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    unsafe {
-        ((*(*EFI_SYSTEM_TABLE).boot_services).exit)(EFI_IMAGE_HANDLE, 
-                                                    efi::Status::ABORTED, 
-                                                    0, 
-                                                    ptr::null_mut()
-                                                   );
-
-        loop {} // useless loop because rust doesn't understand that 
-                // EFI_SYSTEM_TABLE.Exit will exit the software.
-    }
-}
 
 /// Global for the EFI_SYSTEM_TABLE, so it can be used outside the entry point function
 static mut EFI_SYSTEM_TABLE: *mut efi::SystemTable = ptr::null_mut();
@@ -74,7 +60,7 @@ pub fn efi_main(image_handle: efi::Handle, system_table: *mut efi::SystemTable) 
                                                                       mapkey
                                                                      );
         if status != efi::Status::SUCCESS { return status }
-        loop {}
     }
-    efi::Status::NOT_READY 
+    panic!();
+    return efi::Status::NOT_READY;
 }

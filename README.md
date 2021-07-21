@@ -1,8 +1,5 @@
 ## Building and running 
-`$ cargo build`\n
-This will build the rust project, optional is the `--release` flag that will output an optimized build.
-
-`# ./qemu {configuration}`
-This shell script copies the efi executable to the `iso/` directory and starts qemu in text mode. 
-Replace `{configuration}` with whatever configuration you built for in the last step (`release` if you built with the `--release flag`, `debug` otherwise)
-_Both commands need to be run in a unix environment, in the root directory_
+- `$ cargo run`
+***Notice***: *You need a unix environment to build and run the project, 
+until windows support is added you can manually change the runner property 
+lin `.cargo/config.toml` to qemu.bat.*
