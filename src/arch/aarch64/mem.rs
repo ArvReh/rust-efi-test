@@ -12,7 +12,7 @@
 #[no_mangle]
 pub unsafe fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8 {
     asm!(
-        "rep stosb",
+        "str",
         inout("rdi") s => _,
         in("eax") c as u32,
         inout("rcx") n => _

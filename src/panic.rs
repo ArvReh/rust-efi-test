@@ -2,9 +2,9 @@ use core::panic::PanicInfo;
 use core::ptr;
 
 use r_efi::efi;
-use crate::{EFI_SYSTEM_TABLE, EFI_IMAGE_HANDLE};
 
-use kernel::arch::arch::utils::asm_loop;
+use crate::arch::utils::asm_loop;
+use crate::efi_utilities::{EFI_SYSTEM_TABLE, EFI_IMAGE_HANDLE};
 
 #[panic_handler]
 pub fn panic(_info: &PanicInfo) -> ! {
@@ -20,6 +20,6 @@ pub fn panic(_info: &PanicInfo) -> ! {
         }
 
         loop {} // useless loop because rust doesn't understand that 
-                // EFI_SYSTEM_TABLE.Exit will exit the software.
+                // EFI_SYSTEM_TABLE.Exit() will exit the software.
     }
 }

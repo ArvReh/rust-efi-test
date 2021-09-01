@@ -4,63 +4,34 @@
 #![feature(asm)]
 #![feature(abi_efiapi)]
 
-use kernel::arch::arch::mem;
-mod panic;
+use kernel::panic::panic;
+use kernel::arch::mem;
+use kernel::efi_utilities::{EFI_SYSTEM_TABLE, EFI_IMAGE_HANDLE, efi_exit_boot_services};
+//use kernel::arch::serial_tty::SerialTty;
+use kernel::tty;
+use kernel::tty::TtySink;
 
 use core::ptr;
 use core::ffi::c_void;
 
 use r_efi::efi;
 
-/// Global for the EFI_SYSTEM_TABLE, so it can be used outside the entry point function
-static mut EFI_SYSTEM_TABLE: *mut efi::SystemTable = ptr::null_mut();
-/// Global for the EFI_IMAGE_HANDLE, so it can be used outside the entry point function
-static mut EFI_IMAGE_HANDLE: efi::Handle = ptr::null_mut();
-
 #[no_mangle]
 pub fn efi_main(image_handle: efi::Handle, system_table: *mut efi::SystemTable) -> efi::Status {
-    // Move the efi paramters to their global counterparts.
     unsafe {
+        // Move the efi paramters to their global counterparts.
         EFI_SYSTEM_TABLE = system_table;
         EFI_IMAGE_HANDLE = image_handle;
+
+        let status: efi::Status = efi_exit_boot_services();
+        if status != efi::Status::SUCCESS { return status; };
+
+        ptr::write_volatile(0xb8000 as *mut u16, 0x4F4F);
+        //let terminal: tty::Tty<SerialTty> = tty::Tty::new(SerialTty::init());
+        //let cstr: [u8; 6] = [0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00];
+        //terminal.sink.writes(cstr.as_ptr());
+        //if status != efi::Status::SUCCESS { return status; };
     }
 
-    let mut memorymap_size: usize = 0;
-    let mut mapkey: usize = 0;
-    let mut descriptor_size: usize = 0;
-    let mut descriptor_version: u32 = 0;
-
-    unsafe {
-        let status = 
-            ((*(*EFI_SYSTEM_TABLE).boot_services).get_memory_map)(&mut memorymap_size, 
-                                                                  ptr::null_mut(),
-                                                                  &mut mapkey, 
-                                                                  &mut descriptor_size,
-                                                                  &mut descriptor_version
-                                                                 );
-        if status != efi::Status::BUFFER_TOO_SMALL { return status; }
-        memorymap_size += descriptor_size;
-        let mut memorymap: *mut c_void = ptr::null_mut();
-        let status = 
-            ((*(*EFI_SYSTEM_TABLE).boot_services).allocate_pool)(efi::LOADER_DATA,
-                                                                 memorymap_size,
-                                                                 &mut memorymap as *mut *mut c_void
-                                                                );
-        if status != efi::Status::SUCCESS { return status }
-        let status = 
-            ((*(*EFI_SYSTEM_TABLE).boot_services).get_memory_map)(&mut memorymap_size,
-                                                                  memorymap as *mut efi::MemoryDescriptor,
-                                                                  &mut mapkey, 
-                                                                  &mut descriptor_size,
-                                                                  &mut descriptor_version
-                                                                 );
-        if status != efi::Status::SUCCESS { return status }
-        let status = 
-            ((*(*EFI_SYSTEM_TABLE).boot_services).exit_boot_services)(EFI_IMAGE_HANDLE,
-                                                                      mapkey
-                                                                     );
-        if status != efi::Status::SUCCESS { return status }
-    }
     panic!();
-    return efi::Status::NOT_READY;
 }

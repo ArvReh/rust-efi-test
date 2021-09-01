@@ -1,5 +1,5 @@
 /target
 /iso
-Session.vim
+src/Session.vim
 list.md
 Cargo.lock
