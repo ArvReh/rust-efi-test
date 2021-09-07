@@ -7,9 +7,9 @@
 use kernel::panic::panic;
 use kernel::arch::mem;
 use kernel::efi_utilities::{EFI_SYSTEM_TABLE, EFI_IMAGE_HANDLE, efi_exit_boot_services};
-//use kernel::arch::serial_tty::SerialTty;
-use kernel::tty;
+use kernel::arch::serial_tty::SerialTty;
 use kernel::tty::TtySink;
+use kernel::tty;
 
 use core::ptr;
 use core::ffi::c_void;
@@ -26,11 +26,12 @@ pub fn efi_main(image_handle: efi::Handle, system_table: *mut efi::SystemTable) 
         let status: efi::Status = efi_exit_boot_services();
         if status != efi::Status::SUCCESS { return status; };
 
-        ptr::write_volatile(0xb8000 as *mut u16, 0x4F4F);
-        //let terminal: tty::Tty<SerialTty> = tty::Tty::new(SerialTty::init());
-        //let cstr: [u8; 6] = [0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x00];
-        //terminal.sink.writes(cstr.as_ptr());
-        //if status != efi::Status::SUCCESS { return status; };
+        let mut terminal: tty::Tty<SerialTty> = tty::Tty::new(SerialTty::init(0x3F8));
+        let string: &str = "Hello, World!";
+        terminal.sink.clear();
+        terminal.sink.write_str(string);
+        terminal.sink.write_char('.');
+        if status != efi::Status::SUCCESS { return status; };
     }
 
     panic!();
