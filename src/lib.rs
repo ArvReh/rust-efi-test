@@ -4,4 +4,5 @@
 pub mod arch;
 pub mod panic;
 pub mod efi_utilities;
-pub mod tty;
+pub mod tty; 
+pub mod core_globals;

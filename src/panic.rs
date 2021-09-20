@@ -4,22 +4,22 @@ use core::ptr;
 use r_efi::efi;
 
 use crate::arch::utils::asm_loop;
-use crate::efi_utilities::{EFI_SYSTEM_TABLE, EFI_IMAGE_HANDLE};
+use crate::core_globals::CORE_GLOBALS;
 
 #[panic_handler]
 pub fn panic(_info: &PanicInfo) -> ! {
     unsafe {
-        if !(*EFI_SYSTEM_TABLE).boot_services.is_null() {
-            ((*(*EFI_SYSTEM_TABLE).boot_services).exit)(EFI_IMAGE_HANDLE, 
-                                                        efi::Status::ABORTED, 
-                                                        0, 
-                                                        ptr::null_mut()
-                                                       );
+        if !(*CORE_GLOBALS.efi_system_table).boot_services.is_null() {
+            ((*(*CORE_GLOBALS.efi_system_table).boot_services).exit)(CORE_GLOBALS.efi_image_handle, 
+                                                                     efi::Status::ABORTED, 
+                                                                     0, 
+                                                                     ptr::null_mut()
+                                                                    );
         } else {
             asm_loop();
         }
 
         loop {} // useless loop because rust doesn't understand that 
-                // EFI_SYSTEM_TABLE.Exit() will exit the software.
+                // this line is unreachable;
     }
 }

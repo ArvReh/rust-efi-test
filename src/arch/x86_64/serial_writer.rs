@@ -1,9 +1,7 @@
 use core::fmt;
+use core::fmt::Write;
 use core::str;
 use core::mem;
-
-use crate::tty;
-use crate::tty::TtySink;
 
 #[inline(always)]
 unsafe fn outb(port: u16, byte: u8) {
@@ -21,11 +19,11 @@ unsafe fn inb(port: u16) -> u8 {
 
 }
 
-pub struct SerialTty(u16);
+pub struct SerialWriter(u16);
 
-impl SerialTty {
+impl SerialWriter {
     pub fn init(port: u16) -> Self {
-        let tty = SerialTty(port);
+        let tty = SerialWriter(port);
         unsafe {
             outb(tty.0+1, 0x00); // Disable interrupts
             outb(tty.0+3, 0x80); // Set DLAB bit
@@ -43,14 +41,25 @@ impl SerialTty {
         }
         tty
     }
+    pub fn clear(&mut self) -> fmt::Result {
+        let clear_str: &str = match str::from_utf8(&[0x1B, 0x5B, 0x32, 0x4A, 0x1B,
+                                                     0x5B, 0x0, 0x3B, 0x0, 0x48]) 
+        {
+            Ok(ok) => ok,
+            Err(_) => return Err(fmt::Error)
+        };
+        self.write_str(&clear_str)?;
+        Ok(())
+    }
 }
 
-impl TtySink for SerialTty {
+impl fmt::Write for SerialWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         unsafe {
             for c in s.bytes() {
                 //while inb(self.0+5)&0x20 != 0 {}
                 outb(self.0, c);
+                loop {}
             }
         }
         Ok(())
@@ -63,15 +72,12 @@ impl TtySink for SerialTty {
         }
         Ok(())
     }
+}
 
-    fn clear(&mut self) -> fmt::Result {
-        let clear_str: &str = match str::from_utf8(&[0x1B, 0x5B, 0x32, 0x4A, 0x1B,
-                                                     0x5B, 0x0, 0x3B, 0x0, 0x48]) 
-        {
-            Ok(ok) => ok,
-            Err(_) => return Err(fmt::Error)
-        };
-        self.write_str(&clear_str)?;
-        Ok(())
+#[macro_export]
+macro_rules! print {
+   ($($arg:tt)*) => {
+        let _ = core::fmt::write(
+            &mut *$crate::core_globals::CORE_GLOBALS.serial_writer, format_args!($($arg)*));
     }
 }
